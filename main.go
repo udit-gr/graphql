@@ -6,40 +6,101 @@ import (
 	"log"
 
 	"github.com/graphql-go/graphql"
+	"github.com/udit-gr/graphql-go/config"
 )
 
+var authorType = graphql.NewObject{
+	graphql.ObjectConfig{
+		Name: "author",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"tutorials": &graphql.Field{
+				Type: graphql.NewList(graphql.Int),
+			},
+		},
+	},
+}
+
+var tutorialType = graphql.NewObject{
+	graphql.ObjectConfig{
+		Name: "tutorial",
+		Fields: graphql.Fields{
+			"id": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"title": &graphql.Field{
+				Type: graphql.String,
+			},
+			"author": &graphql.Field{
+				Type: authorType,
+			},
+			"comments": &graphql.Field{
+				Type: graphql.NewList(graphql.String),
+			},
+			"likes": &graphql.Field{
+				Type: graphql.Int,
+			},
+		},
+	},
+}
+
 func main() {
-	// Schema (we will define all our field here)
-  // And then whenever a request comes for ths field, the resolver will reolve and returns the
-  // expected response for that field.
+
+	authors := config.populateAuthors()
+	tutorials := config.populateTutorials()
+
+	// Schema for the queries
 	fields := graphql.Fields{
-		"hello": &graphql.Field{
-			Type: graphql.String,
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return "world", nil
+		"authors": &graphql.Field{
+			Type:        graphql.NewList(authorType),
+			Description: "Get Authors List",
+			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+				return authors, nil
+			},
+		},
+		"tutorials": &graphql.Field{
+			Type:        graphql.NewList(tutorialType),
+			Description: "Get Tutorials List",
+			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+				return tutorials, nil
 			},
 		},
 	}
-
 
 	rootQuery := graphql.ObjectConfig{Name: "RootQuery", Fields: fields}
 	schemaConfig := graphql.SchemaConfig{Query: graphql.NewObject(rootQuery)}
 	schema, err := graphql.NewSchema(schemaConfig)
 	if err != nil {
-		log.Fatalf("failed to create new schema, error: %v", err)
+		log.Fatal("[ERR] Failed to create new schema, Err : %+v", err)
 	}
 
-	// Query (that requests the fields) 
+	// Query
 	query := `
-        {
-            hello
-        }
-    `
+    {
+      authors{
+        name
+      }
+    }
+  `
+
 	params := graphql.Params{Schema: schema, RequestString: query}
 	r := graphql.Do(params)
 	if len(r.Errors) > 0 {
-		log.Fatalf("failed to execute graphql operation, errors: %+v", r.Errors)
+		log.Printf("[ERR] Failed to execute graphql operation, Err : %+v", err)
+		return
 	}
-	rJSON, _ := json.Marshal(r)
-	fmt.Printf("%s \n", rJSON) // {“data”:{“hello”:”world”}}
+
+	result, err := json.Marhsal(r)
+	if err != nil {
+		log.Printf("[ERR] Error while un-marshalling json data, Err : %+v", err)
+		return
+	}
+
+	log.Printf("Result : %s\n", string(result))
+
 }
