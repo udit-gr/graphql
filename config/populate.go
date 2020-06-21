@@ -1,19 +1,19 @@
 package config
 
-func populateAuthors() []Author {
+func PopulateAuthors() []Author {
 
 	var authors []Author
 
-	author1 := Author{ID: 1, Name: "Nick", Tutorial: []int{1, 2, 3, 4}}
-	autors = append(authors, author1)
+	author1 := Author{ID: 1, Name: "Nick", Tutorials: []int{1, 2, 3, 4}}
+	authors = append(authors, author1)
 
-	author2 := Author{ID: 2, Name: "John", Tutorial: []int{5, 6}}
-	author = append(authors, author2)
+	author2 := Author{ID: 2, Name: "John", Tutorials: []int{5, 6}}
+	authors = append(authors, author2)
 
 	return authors
 }
 
-func populateTutorials() []Tutorial {
+func PopulateTutorials() []Tutorial {
 
 	var tutorials []Tutorial
 

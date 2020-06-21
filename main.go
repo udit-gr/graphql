@@ -2,14 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/graphql-go/graphql"
-	"github.com/udit-gr/graphql-go/config"
+	"github.com/udit-gr/graphql/config"
 )
 
-var authorType = graphql.NewObject{
+var authorType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "author",
 		Fields: graphql.Fields{
@@ -24,9 +23,9 @@ var authorType = graphql.NewObject{
 			},
 		},
 	},
-}
+)
 
-var tutorialType = graphql.NewObject{
+var tutorialType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "tutorial",
 		Fields: graphql.Fields{
@@ -47,12 +46,12 @@ var tutorialType = graphql.NewObject{
 			},
 		},
 	},
-}
+)
 
 func main() {
 
-	authors := config.populateAuthors()
-	tutorials := config.populateTutorials()
+	authors := config.PopulateAuthors()
+	tutorials := config.PopulateTutorials()
 
 	// Schema for the queries
 	fields := graphql.Fields{
@@ -79,23 +78,14 @@ func main() {
 		log.Fatal("[ERR] Failed to create new schema, Err : %+v", err)
 	}
 
-	// Query
-	query := `
-    {
-      authors{
-        name
-      }
-    }
-  `
-
-	params := graphql.Params{Schema: schema, RequestString: query}
+	params := graphql.Params{Schema: schema, RequestString: config.GetAuthorsList}
 	r := graphql.Do(params)
 	if len(r.Errors) > 0 {
 		log.Printf("[ERR] Failed to execute graphql operation, Err : %+v", err)
 		return
 	}
 
-	result, err := json.Marhsal(r)
+	result, err := json.Marshal(r)
 	if err != nil {
 		log.Printf("[ERR] Error while un-marshalling json data, Err : %+v", err)
 		return
